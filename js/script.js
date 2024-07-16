@@ -104,4 +104,97 @@ window.addEventListener("DOMContentLoaded", function() {
     }
 
     setClock(".timer", deadline);
+    
+    // Modal 
+
+    const modal = document.querySelector(".modal"),
+          modalBtns = document.querySelectorAll("[data-modal]"),
+          modalClose = modal.querySelector("[data-close]");
+    
+    function openModalWindow() {
+        modal.classList.add("show");
+        modal.classList.remove("hide");
+        document.body.style.overflow = "hidden";
+        clearTimeout(modalCountDown);
+    }
+
+    function closeModalWindow() {
+        modal.classList.remove("show");
+        modal.classList.add("hide");
+        document.body.style.overflow = "";
+    }
+
+    modalBtns.forEach(item => {
+        item.addEventListener("click", openModalWindow);
+    });
+
+    modalClose.addEventListener("click", closeModalWindow);
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            closeModalWindow();
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.code === "Escape" && modal.classList.contains("show")) {
+            closeModalWindow();
+        }
+    });
+
+    // const modalCountDown = setTimeout(openModalWindow, 2000);
+
+    function showModalByScroll() {
+        if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
+            openModalWindow();
+            removeEventListener("scroll", showModalByScroll);
+        }
+    }
+
+    window.addEventListener("scroll", showModalByScroll);
+
+    // Cards
+
+    class CardConstructor {
+        constructor(img, title, text, price) {
+            this.img = img;
+            this.title = title;
+            this.text = text;
+            this.price = price;
+            this.card = document.createElement("div");
+            this.exchange = 40;
+            this.exchangeCurr();
+        }
+
+        exchangeCurr() {
+            this.price = Math.floor(this.price / this.exchange);
+        }
+
+        createCard() {
+            this.card.classList.add("menu__item");
+            this.card.innerHTML = `
+                <img src=${this.img} alt="vegy">
+                <h3 class="menu__item-subtitle">${this.title}</h3>
+                <div class="menu__item-descr">${this.text}</div>
+                <div class="menu__item-divider"></div>
+                <div class="menu__item-price">
+                    <div class="menu__item-cost">Цена:</div>
+                    <div class="menu__item-total"><span>${this.price}</span> $/день</div>
+                </div>`;
+            document.querySelector(".menu .container").append(this.card);
+        }
+    }
+
+    const firstText = 'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
+          secondText = 'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
+          thirdText = 'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.';
+
+    const firstCard = new CardConstructor("img/tabs/vegy.jpg", 'Меню "Фитнес"', firstText, 229),
+          secondCard = new CardConstructor("img/tabs/elite.jpg", 'Меню “Премиум”', secondText, 550),
+          thirdCard = new CardConstructor("img/tabs/post.jpg", 'Меню "Постное"', thirdText, 430);
+
+    firstCard.createCard();
+    secondCard.createCard();
+    thirdCard.createCard();
+
 })
