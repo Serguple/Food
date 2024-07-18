@@ -152,47 +152,71 @@ window.addEventListener("DOMContentLoaded", function() {
 
     // Cards
 
-    class CardConstructor {
-        constructor(img, title, text, price) {
-            this.img = img;
-            this.title = title;
-            this.text = text;
-            this.price = price;
-            this.card = document.createElement("div");
-            this.exchange = 40;
-            this.exchangeCurr();
-        }
+    // class CardConstructor {
+    //     constructor(img, title, text, price) {
+    //         this.img = img;
+    //         this.title = title;
+    //         this.text = text;
+    //         this.price = price;
+    //         this.card = document.createElement("div");
+    //         this.exchange = 40;
+    //         this.exchangeCurr();
+    //     }
 
-        exchangeCurr() {
-            this.price = Math.floor(this.price / this.exchange);
-        }
+    //     exchangeCurr() {
+    //         this.price = Math.floor(this.price * this.exchange);
+    //     }
 
-        createCard() {
-            this.card.classList.add("menu__item");
-            this.card.innerHTML = `
-                <img src=${this.img} alt="vegy">
-                <h3 class="menu__item-subtitle">${this.title}</h3>
-                <div class="menu__item-descr">${this.text}</div>
+    //     createCard() {
+    //         this.card.classList.add("menu__item");
+    //         this.card.innerHTML = `
+                // <img src=${this.img} alt="vegy">
+                // <h3 class="menu__item-subtitle">${this.title}</h3>
+                // <div class="menu__item-descr">${this.text}</div>
+                // <div class="menu__item-divider"></div>
+                // <div class="menu__item-price">
+                //     <div class="menu__item-cost">Цена:</div>
+                //     <div class="menu__item-total"><span>${this.price}</span> грн/день</div>
+                // </div>`;
+    //         document.querySelector(".menu .container").append(this.card);
+    //     }
+    // }
+
+    // const getResource = async (url) => {
+    //     const res = await fetch(url);
+
+    //     if (!res.ok) {
+    //         throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+    //     }
+
+    //     return await res.json();
+    // }
+
+    axios.get(" http://localhost:3000/menu")
+        .then(data => createCard(data.data));
+
+    function createCard(data) {
+        data.forEach(({img, title, descr, price}) => {
+            price *= 40;
+
+            const element = document.createElement("div");
+
+            element.classList.add("menu__item");
+
+            element.innerHTML = `
+                <img src=${img} alt="vegy">
+                <h3 class="menu__item-subtitle">${title}</h3>
+                <div class="menu__item-descr">${descr}</div>
                 <div class="menu__item-divider"></div>
                 <div class="menu__item-price">
                     <div class="menu__item-cost">Цена:</div>
-                    <div class="menu__item-total"><span>${this.price}</span> $/день</div>
-                </div>`;
-            document.querySelector(".menu .container").append(this.card);
-        }
+                    <div class="menu__item-total"><span>${price}</span> грн/день</div>
+                </div>
+            `;
+
+            document.querySelector(".menu .container").append(element);
+        })
     }
-
-    const firstText = 'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-          secondText = 'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-          thirdText = 'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.';
-
-    const firstCard = new CardConstructor("img/tabs/vegy.jpg", 'Меню "Фитнес"', firstText, 229),
-          secondCard = new CardConstructor("img/tabs/elite.jpg", 'Меню “Премиум”', secondText, 550),
-          thirdCard = new CardConstructor("img/tabs/post.jpg", 'Меню "Постное"', thirdText, 430);
-
-    firstCard.createCard();
-    secondCard.createCard();
-    thirdCard.createCard();
 
     //Forms
 
@@ -205,10 +229,20 @@ window.addEventListener("DOMContentLoaded", function() {
     }
 
     form.forEach(item => {
-        postData(item);
+        bindPostData(item);
     });
 
-    function postData(form) {
+    const postData = async (url, data) => {
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {"Content-type": "application/json"},
+            body: data
+        });
+
+        return await res.json();
+    }
+
+    function bindPostData(form) {
         form.addEventListener("submit", (e) => {
             e.preventDefault();
 
@@ -224,18 +258,9 @@ window.addEventListener("DOMContentLoaded", function() {
             
             const formData = new FormData(form);
 
-            const obj = {};
+            const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-            formData.forEach((key, value) => {
-                obj[key] = value;
-            })
-
-            fetch("server.php", {
-                method: "POST",
-                headers: {"Content-type": "application/json"},
-                body: JSON.stringify(obj)
-            })
-            .then(data => data.text())
+            postData("http://localhost:3000/requests", json)
             .then(data => {
                 console.log(data);
                 showThanksModal(messages.success);
@@ -246,18 +271,7 @@ window.addEventListener("DOMContentLoaded", function() {
             })
             .finally(() => {
                 form.reset();
-            })
-
-            // request.addEventListener("load", () => {
-            //     if (request.status === 200) {
-            //         console.log(request.response);
-            //         showThanksModal(messages.success);
-            //         form.reset();
-            //         newMessage.remove();
-            //     } else {
-            //         showThanksModal(messages.failure);
-            //     }
-            // });
+            });
         })
     }
 
