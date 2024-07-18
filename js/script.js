@@ -8,8 +8,8 @@ window.addEventListener("DOMContentLoaded", function() {
           tabs = document.querySelectorAll(".tabheader__item"),
           tabContent = document.querySelectorAll(".tabcontent");
 
-    function hideTabsContent() {
-        tabContent.forEach(item => {
+    function hideContent(element) {
+        element.forEach(item => {
             item.classList.add("hide");
             item.classList.remove("show");
         });
@@ -25,7 +25,7 @@ window.addEventListener("DOMContentLoaded", function() {
         tabs[i].classList.add("tabheader__item_active");
     }
 
-    hideTabsContent();
+    hideContent(tabContent);
     showTabsContent(0);
 
     tabsParent.addEventListener("click", e => {
@@ -35,7 +35,7 @@ window.addEventListener("DOMContentLoaded", function() {
 
             tabs.forEach((item, i) => {
                 if (item == target) {
-                    hideTabsContent();
+                    hideContent(tabContent);
                     showTabsContent(i);
                 }
             })
@@ -299,4 +299,48 @@ window.addEventListener("DOMContentLoaded", function() {
             closeModalWindow();
         }, 2000)
     }
+
+    //Slider
+
+    const prev = document.querySelector('.offer__slider-prev'),
+          next= document.querySelector('.offer__slider-next'),
+          current = document.querySelector("#current"),
+          total = document.querySelector("#total"),
+          slides = document.querySelectorAll(".offer__slide");
+
+    let slideIndex = 0;
+
+    showSlides(slideIndex);
+
+    total.textContent = getZero(slides.length);
+
+    function showContent(element) {
+        element.classList.add("show")
+        element.classList.remove("hide")
+    }
+
+    function showSlides(n) {
+        if (n > slides.length - 1) {
+            slideIndex = 0;
+        } 
+        if (n < 0) {
+            slideIndex = slides.length - 1;
+        }
+
+        hideContent(slides);
+        showContent(slides[slideIndex]);
+
+        current.textContent = getZero(slideIndex + 1);
+    }
+
+    function toSlide(n) {
+        showSlides(slideIndex += n);
+    }
+
+    prev.addEventListener("click", () => {
+        toSlide(-1);
+    });
+    next.addEventListener("click", () => {
+        toSlide(1);
+    });
 })
